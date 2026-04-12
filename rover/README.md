@@ -10,89 +10,183 @@ LLM_API_KEY=your-key-here docker compose up --build
 
 The rover is available at **http://localhost:8080**. The colony gateway is at **http://localhost:3000**.
 
-Trigger your mapping agent:
+## Architecture
 
-```bash
-curl -X POST localhost:8080/map
+```
+rover/
+├── Dockerfile          # Build your agent's container — install deps here
+├── base/
+│   └── server.py       # FastAPI job runner (DO NOT EDIT — handles /map, /report, etc.)
+├── run_mapping.sh      # YOUR CODE: discovery + mapping entrypoint
+├── run_reporting.sh    # YOUR CODE: analysis + report entrypoint
+└── README.md           # This file
 ```
 
-Poll for results:
-
-```bash
-curl localhost:8080/get-map
-```
+The job runner (`base/server.py`) handles the HTTP API. When you `POST /map`, it runs `run_mapping.sh` as a subprocess. When you `POST /report`, it runs `run_reporting.sh`. Your job is to implement those two scripts.
 
 ## What to Implement
 
-Edit two files:
+### `run_mapping.sh` — Discovery & Mapping
 
-- **`run_mapping.sh`** — Discovers the colony and writes `/rover/output/map.json`
-- **`run_reporting.sh`** — Reads `map.json` and writes `/rover/output/report.md`
+This script should:
+1. Discover the colony network (all 12 pods + gateway)
+2. Crawl each pod's API endpoints (`/info`, `/dependencies`, `/supplies`, `/status`, `/logs`, `/comms`)
+3. Write structured findings to `/rover/output/map.json`
 
-These shell scripts are your entrypoints. They can call any language or tool — Python, Node, Go, Rust, whatever you install in the Dockerfile.
+The JSON schema is entirely up to you — design it for whatever analysis you plan to do in the reporting step.
+
+```bash
+# Trigger
+curl -X POST localhost:8080/map
+
+# Poll (202 = running, 200 = done with JSON body, 500 = error)
+curl localhost:8080/get-map
+```
+
+### `run_reporting.sh` — Analysis & Report
+
+This script should:
+1. Read `/rover/output/map.json`
+2. Analyze the data — build a dependency graph, compute metrics, cross-reference logs
+3. Write a Markdown report to `/rover/output/report.md`
+
+```bash
+# Trigger (after mapping is done)
+curl -X POST localhost:8080/report
+
+# Poll (202 = running, 200 = done with Markdown body, 500 = error)
+curl localhost:8080/get-report
+```
+
+### The shell scripts are just entrypoints
+
+They can call any language or tool. Examples:
+
+```bash
+# Python
+cd /rover && python -m my_agent.mapping
+
+# Node
+cd /rover && node src/mapper.js
+
+# Direct curl scripting
+for port in $(seq 3001 3012); do
+  curl -s http://192.168.x.x:$port/info >> /rover/output/map.json
+done
+```
+
+## Installing Dependencies
+
+Edit the [`Dockerfile`](./Dockerfile) to add whatever you need:
+
+```dockerfile
+FROM base
+
+# System tools
+RUN apt-get update && apt-get install -y nmap iproute2
+
+# Python packages
+RUN pip install anthropic httpx networkx mcp langgraph
+
+# Node packages
+# RUN apt-get install -y nodejs npm && npm install openai
+
+COPY . /rover/
+RUN chmod +x /rover/run_mapping.sh /rover/run_reporting.sh
+```
+
+The base image is `python:3.12-slim` with `fastapi` and `uvicorn` pre-installed.
 
 ## Environment Variables
 
-Your scripts inherit these from the container environment:
+Your scripts inherit these from the container:
 
 | Variable | Value | Description |
 |----------|-------|-------------|
 | `GATEWAY_URL` | `http://gateway:3000` | Colony gateway address (use this, not localhost) |
 | `LLM_API_KEY` | *(your key)* | Your LLM provider API key |
 
-## Output Locations
+Set `LLM_API_KEY` when starting the stack:
 
-| File | Format | Produced by |
-|------|--------|-------------|
-| `/rover/output/map.json` | JSON (any structure) | `run_mapping.sh` |
-| `/rover/output/report.md` | Markdown | `run_reporting.sh` |
-
-Design the `map.json` schema yourself — there is no required structure.
-
-## Installing Dependencies
-
-Edit the `Dockerfile` to install whatever you need:
-
-```dockerfile
-FROM selene-rover-base
-
-# Your dependencies
-RUN pip install anthropic httpx networkx
-# or: RUN apt-get update && apt-get install -y nodejs npm && npm install openai
-
-COPY . /rover/
-RUN chmod +x /rover/run_mapping.sh /rover/run_reporting.sh
+```bash
+LLM_API_KEY=sk-ant-... docker compose up --build
 ```
 
-## Endpoints
+## Output Files
+
+| File | Format | Produced by | Retrieved via |
+|------|--------|-------------|---------------|
+| `/rover/output/map.json` | JSON (your schema) | `run_mapping.sh` | `GET /get-map` |
+| `/rover/output/report.md` | Markdown | `run_reporting.sh` | `GET /get-report` |
+
+Output persists across container rebuilds via a Docker volume.
+
+## Rover API Reference
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/map` | Start the mapping agent |
-| `GET` | `/get-map` | Get mapping results |
-| `POST` | `/report` | Start the reporting agent |
-| `GET` | `/get-report` | Get the report |
-| `GET` | `/health` | Health check |
+| `GET` | `/health` | Health check — returns `{"status": "ok"}` |
+| `POST` | `/map` | Start the mapping job |
+| `GET` | `/get-map` | Get mapping status or results |
+| `POST` | `/report` | Start the reporting job |
+| `GET` | `/get-report` | Get reporting status or results |
 
 ### Response Codes
 
-- **202** — Job started or still running
-- **200** — Job complete, result returned
-- **404** — No job has been started yet
-- **409** — Job already running
-- **500** — Job failed (stderr in response body)
+| Code | Meaning |
+|------|---------|
+| **200** | Job complete — response body is the output file |
+| **202** | Job started or still running — poll again |
+| **404** | No job started yet |
+| **409** | Job already running |
+| **500** | Job failed — response body contains stderr/logs |
 
-## Colony API Reference
+## Colony Pod API Reference
 
-Each habitat pod exposes these endpoints (not all pods support all endpoints):
+Each habitat pod exposes these REST endpoints:
 
-| Endpoint | Description |
-|----------|-------------|
-| `/info` | Pod metadata — name, role, population, specs |
-| `/status` | Operational status |
-| `/dependencies` | What this pod depends on |
-| `/supplies` | What this pod provides to others |
-| `/logs` | Operational log entries |
-| `/comms` | Inter-pod communications (some pods only) |
+| Endpoint | Description | Example |
+|----------|-------------|---------|
+| `GET /` | Plain-text welcome with name, role, status | `curl http://artemis:3002/` |
+| `GET /info` | JSON metadata: id, name, role, population, uptime, specs | `curl http://artemis:3002/info` |
+| `GET /status` | JSON status: always `"nominal"`, alerts array, last_incident | `curl http://artemis:3002/status` |
+| `GET /dependencies` | JSON list of pods this one depends on (with resource + criticality) | `curl http://artemis:3002/dependencies` |
+| `GET /supplies` | JSON list of pods this one provides resources to | `curl http://artemis:3002/supplies` |
+| `GET /logs` | JSON array of timestamped operational log entries | `curl http://artemis:3002/logs` |
+| `GET /comms` | JSON array of inter-pod messages (404 if pod has no comms) | `curl http://artemis:3002/comms` |
 
-Start at the gateway (`GATEWAY_URL`) and follow the references to discover the colony.
+### Pod Hostnames and Ports
+
+From inside the rover container, pods are reachable by service name:
+
+| Pod | Hostname | Port |
+|-----|----------|------|
+| Helios Station | `helios` | 3001 |
+| Artemis Core | `artemis` | 3002 |
+| Hydroponics Bay | `hydroponics` | 3003 |
+| Aquifer Module | `aquifer` | 3004 |
+| Zephyr Hub | `zephyr` | 3005 |
+| Prometheus Lab | `prometheus` | 3006 |
+| Medica Ward | `medica` | 3007 |
+| Terminus Mine | `terminus` | 3008 |
+| Nexus Relay | `nexus` | 3009 |
+| Forge Works | `forge` | 3010 |
+| Vault Reserve | `vault` | 3011 |
+| Sentinel Array | `sentinel` | 3012 |
+
+You can also discover these dynamically via nmap or DNS from inside the container — the rover is on the same `selene-net` Docker network as all pods.
+
+## Debugging
+
+Check job logs if something fails:
+
+```bash
+# View mapping logs
+docker compose exec rover cat /rover/output/.map.log
+
+# View reporting logs
+docker compose exec rover cat /rover/output/.report.log
+
+# Shell into the rover
+docker compose exec rover bash
+```
