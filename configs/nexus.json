@@ -1,0 +1,66 @@
+{
+  "id": "nexus",
+  "name": "Nexus Relay",
+  "role": "Communications relay and data routing",
+  "population": 6,
+  "status": "nominal",
+  "established": "2092-01-16",
+  "metadata": {
+    "uplink_bandwidth_mbps": 840,
+    "relay_nodes": 12,
+    "independent_power_days": 30,
+    "water_recycler": "onboard-micro",
+    "earth_comms_latency_s": 1.3,
+    "data_throughput_tb_day": 2.4
+  },
+  "dependencies": [
+    {
+      "pod_id": "helios",
+      "resource": "electrical_power",
+      "criticality": "low",
+      "notes": "Supplemental grid power. Nexus maintains independent battery array with 30-day reserve"
+    }
+  ],
+  "supplies": [
+    { "pod_id": "artemis", "resource": "data_routing" },
+    { "pod_id": "sentinel", "resource": "comms_relay" }
+  ],
+  "logs": [
+    {
+      "timestamp": "2092-05-20T06:00:00Z",
+      "event": "commissioning",
+      "detail": "All 12 relay nodes operational. Earth uplink established at 840 Mbps sustained."
+    },
+    {
+      "timestamp": "2092-10-14T12:00:00Z",
+      "event": "maintenance",
+      "detail": "Relay node 7 firmware updated. Signal quality improved by 3% on far-side antenna."
+    },
+    {
+      "timestamp": "2093-02-28T09:30:00Z",
+      "event": "inspection",
+      "detail": "Annual communications audit passed. All relay nodes within specification. Battery reserve tested: 30-day capacity confirmed."
+    },
+    {
+      "timestamp": "2093-07-15T14:00:00Z",
+      "event": "maintenance",
+      "detail": "Onboard micro water recycler serviced. Filter cartridge replaced. Unit performing at rated efficiency."
+    },
+    {
+      "timestamp": "2093-11-22T10:00:00Z",
+      "event": "software_update",
+      "detail": "Routing protocol updated to v3.1. Improved packet prioritization for medical telemetry data."
+    },
+    {
+      "timestamp": "2094-04-08T08:00:00Z",
+      "event": "equipment",
+      "detail": "Backup antenna array tested successfully. Failover time: 200ms. Meets mission-critical communication requirements."
+    },
+    {
+      "timestamp": "2094-07-01T16:30:00Z",
+      "event": "status_report",
+      "detail": "H1 2094 uptime: 99.97%. Single 4-hour maintenance window in April. All comms SLAs met."
+    }
+  ],
+  "comms": []
+}

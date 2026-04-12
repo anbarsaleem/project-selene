@@ -1,0 +1,79 @@
+{
+  "id": "forge",
+  "name": "Forge Works",
+  "role": "Manufacturing and fabrication",
+  "population": 11,
+  "status": "nominal",
+  "established": "2092-03-01",
+  "metadata": {
+    "fabrication_bays": 8,
+    "active_projects": 3,
+    "coolant_source": "aquifer-primary",
+    "output_kg_day": 450,
+    "printer_units": 4,
+    "alloy_types_available": 12
+  },
+  "dependencies": [
+    {
+      "pod_id": "terminus",
+      "resource": "raw_materials",
+      "criticality": "high",
+      "notes": "Processed regolith metals and mineral feedstock for fabrication"
+    },
+    {
+      "pod_id": "helios",
+      "resource": "electrical_power",
+      "criticality": "high",
+      "notes": "Powers smelting furnaces, 3D printers, and CNC systems"
+    },
+    {
+      "pod_id": "aquifer",
+      "resource": "cooling_water",
+      "criticality": "medium",
+      "notes": "Coolant for smelting operations and fabrication equipment thermal management"
+    }
+  ],
+  "supplies": [
+    { "pod_id": "aquifer", "resource": "replacement_pumps" },
+    { "pod_id": "terminus", "resource": "cutting_tools" },
+    { "pod_id": "artemis", "resource": "fabricated_components" }
+  ],
+  "logs": [
+    {
+      "timestamp": "2092-08-15T10:00:00Z",
+      "event": "commissioning",
+      "detail": "Fabrication bay 8 operational. Full manufacturing capacity online."
+    },
+    {
+      "timestamp": "2093-02-01T14:30:00Z",
+      "event": "production",
+      "detail": "Completed fabrication run for Aquifer replacement pump assemblies. 6 units delivered."
+    },
+    {
+      "timestamp": "2093-05-28T09:00:00Z",
+      "event": "equipment",
+      "detail": "3D printer unit 4 installed. Expanded rapid-prototyping capability for custom components."
+    },
+    {
+      "timestamp": "2093-09-12T11:00:00Z",
+      "event": "maintenance",
+      "detail": "Smelting furnace 1 relined. Scheduled downtime: 48 hours. Furnace 2 handling production load."
+    },
+    {
+      "timestamp": "2094-01-20T08:00:00Z",
+      "event": "production_report",
+      "detail": "Q4 2093 output: 40,500 kg fabricated components. Major deliveries to Terminus (cutting tools) and Aquifer (pump assemblies)."
+    },
+    {
+      "timestamp": "2094-04-03T15:45:00Z",
+      "event": "project",
+      "detail": "Sentinel Array mounting bracket fabrication initiated. Custom alloy specification from Artemis engineering directive."
+    },
+    {
+      "timestamp": "2094-06-18T12:30:00Z",
+      "event": "personnel",
+      "detail": "Welder certification program completed for 3 new fabricators. Roster now at full capacity."
+    }
+  ],
+  "comms": []
+}

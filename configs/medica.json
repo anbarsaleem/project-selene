@@ -1,0 +1,80 @@
+{
+  "id": "medica",
+  "name": "Medica Ward",
+  "role": "Medical services and healthcare",
+  "population": 16,
+  "status": "nominal",
+  "established": "2092-01-18",
+  "metadata": {
+    "patient_capacity": 40,
+    "pharmacy_stock_days": 12,
+    "oxygen_reserve_hours": 6,
+    "surgical_suites": 2,
+    "diagnostic_labs": 3,
+    "staff_physicians": 4
+  },
+  "dependencies": [
+    {
+      "pod_id": "prometheus",
+      "resource": "pharmaceuticals",
+      "criticality": "high",
+      "notes": "Primary source for all colony pharmaceutical compounds and medications"
+    },
+    {
+      "pod_id": "aquifer",
+      "resource": "sterilization_water",
+      "criticality": "medium",
+      "notes": "Ultra-filtered water for surgical sterilization and lab processes"
+    },
+    {
+      "pod_id": "zephyr",
+      "resource": "medical_oxygen",
+      "criticality": "high",
+      "notes": "Medical-grade oxygen for patient care and surgical suites"
+    }
+  ],
+  "supplies": [],
+  "logs": [
+    {
+      "timestamp": "2092-07-01T08:00:00Z",
+      "event": "commissioning",
+      "detail": "Surgical suite 2 certified. Full medical capability operational."
+    },
+    {
+      "timestamp": "2092-11-15T14:00:00Z",
+      "event": "health_report",
+      "detail": "Colony-wide health screening complete. 147 residents screened. No significant findings. Bone density monitoring initiated for long-term residents."
+    },
+    {
+      "timestamp": "2093-03-10T10:00:00Z",
+      "event": "inventory",
+      "detail": "Pharmaceutical inventory audit complete. All compounds within expiration. Prometheus supply chain meeting standing order quantities."
+    },
+    {
+      "timestamp": "2093-07-22T16:30:00Z",
+      "event": "equipment",
+      "detail": "Portable ultrasound unit received on supply run SR-2093-07. Deployed to diagnostic lab 2."
+    },
+    {
+      "timestamp": "2093-11-05T09:00:00Z",
+      "event": "personnel",
+      "detail": "Dr. Okafor joined medical staff from Earth-side rotation. Specialty: low-gravity orthopedics."
+    },
+    {
+      "timestamp": "2094-02-20T11:30:00Z",
+      "event": "inspection",
+      "detail": "Annual sterilization system audit passed. Water quality from Aquifer feed meets all surgical-grade specifications."
+    },
+    {
+      "timestamp": "2094-05-14T08:15:00Z",
+      "event": "health_report",
+      "detail": "Q1 2094 health summary: 3 minor injuries treated, 0 surgical procedures, 12 routine checkups. Colony health status: excellent."
+    },
+    {
+      "timestamp": "2094-07-28T15:00:00Z",
+      "event": "inventory",
+      "detail": "Pharmacy stock review: 12 days of critical medications on hand. Within policy minimums. Restocking order placed with Prometheus."
+    }
+  ],
+  "comms": []
+}

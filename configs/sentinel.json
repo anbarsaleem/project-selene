@@ -1,0 +1,64 @@
+{
+  "id": "sentinel",
+  "name": "Sentinel Array",
+  "role": "External monitoring and defense systems",
+  "population": 8,
+  "status": "nominal",
+  "established": "2092-04-01",
+  "metadata": {
+    "sensor_array_count": 64,
+    "independent_power_kw": 180,
+    "water_source": "ice-harvest",
+    "coverage_deg": 360,
+    "radar_range_km": 500,
+    "ice_harvest_l_day": 120
+  },
+  "dependencies": [],
+  "supplies": [
+    { "pod_id": "nexus", "resource": "sensor_feeds" },
+    { "pod_id": "artemis", "resource": "threat_assessment" }
+  ],
+  "logs": [
+    {
+      "timestamp": "2092-09-01T06:00:00Z",
+      "event": "commissioning",
+      "detail": "Sensor array deployment complete. 64 units active. Full 360-degree coverage achieved."
+    },
+    {
+      "timestamp": "2092-11-28T10:30:00Z",
+      "event": "operations",
+      "detail": "Ice harvesting system operational. Drawing from Crater Shackleton deposits. Yield: 120 L/day. Exceeds facility water requirements."
+    },
+    {
+      "timestamp": "2093-04-15T14:00:00Z",
+      "event": "expansion",
+      "detail": "Independent solar array expanded per Directive 2093-089 budget reallocation. Power generation now 180 kW. Full operational independence from colony grid confirmed."
+    },
+    {
+      "timestamp": "2093-08-07T09:00:00Z",
+      "event": "detection",
+      "detail": "Micrometeorite swarm detected at 340 km. Trajectory analysis: no colony impact. Logged and reported to Artemis."
+    },
+    {
+      "timestamp": "2093-12-18T11:30:00Z",
+      "event": "maintenance",
+      "detail": "Sensor units 12, 28, and 45 recalibrated. Detection sensitivity restored to baseline specifications."
+    },
+    {
+      "timestamp": "2094-03-05T08:00:00Z",
+      "event": "inspection",
+      "detail": "Annual systems review complete. Independent power: nominal. Ice harvest: nominal. All sensor arrays: nominal."
+    },
+    {
+      "timestamp": "2094-05-22T15:00:00Z",
+      "event": "software_update",
+      "detail": "Threat classification algorithm updated to v2.3. Improved debris tracking accuracy by 12%."
+    },
+    {
+      "timestamp": "2094-07-10T07:00:00Z",
+      "event": "operations",
+      "detail": "Perimeter scan cycle 2094-28 complete. No anomalies detected. Continuous monitoring active."
+    }
+  ],
+  "comms": []
+}

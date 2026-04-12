@@ -1,0 +1,115 @@
+{
+  "id": "artemis",
+  "name": "Artemis Core",
+  "role": "Colony command and administration",
+  "population": 18,
+  "status": "nominal",
+  "established": "2092-01-15",
+  "metadata": {
+    "administrative_load": "high",
+    "active_directives": 7,
+    "comms_latency_earth_ms": 1300,
+    "personnel_managed": 147,
+    "departments": ["operations", "logistics", "personnel", "safety", "planning"]
+  },
+  "dependencies": [
+    {
+      "pod_id": "helios",
+      "resource": "electrical_power",
+      "criticality": "high",
+      "notes": "Powers command center, data systems, and administrative infrastructure"
+    },
+    {
+      "pod_id": "nexus",
+      "resource": "data_routing",
+      "criticality": "medium",
+      "notes": "Inter-pod and Earth-side communications backbone"
+    },
+    {
+      "pod_id": "aquifer",
+      "resource": "potable_water",
+      "criticality": "low",
+      "notes": "Drinking water and sanitation for administrative personnel"
+    }
+  ],
+  "supplies": [
+    { "pod_id": "sentinel", "resource": "administrative_oversight" },
+    { "pod_id": "forge", "resource": "project_approvals" },
+    { "pod_id": "prometheus", "resource": "research_authorization" },
+    { "pod_id": "vault", "resource": "reserve_management" }
+  ],
+  "logs": [
+    {
+      "timestamp": "2092-06-01T08:00:00Z",
+      "event": "administrative",
+      "detail": "Colony population milestone: 100 residents. Phase 2 staffing targets on track."
+    },
+    {
+      "timestamp": "2092-10-15T10:00:00Z",
+      "event": "directive",
+      "detail": "Directive 2092-042 issued: standardize inter-pod resource reporting formats. Compliance deadline: Q1 2093."
+    },
+    {
+      "timestamp": "2093-03-20T14:00:00Z",
+      "event": "directive",
+      "detail": "Directive 2093-089 issued: reallocate Vault Reserve secondary water system budget to Sentinel Array expansion. Approved by Colony Director Liu. Effective immediately."
+    },
+    {
+      "timestamp": "2093-06-12T09:00:00Z",
+      "event": "personnel",
+      "detail": "Supply run SR-2093-06 arrived. 8 new personnel assigned across Terminus, Medica, and Hydroponics."
+    },
+    {
+      "timestamp": "2093-09-08T11:30:00Z",
+      "event": "directive",
+      "detail": "Infrastructure consolidation project 2093-P4 approved: pipe simplification for Prometheus water supply. Engineering assessment indicates net savings in maintenance overhead."
+    },
+    {
+      "timestamp": "2094-01-02T08:00:00Z",
+      "event": "directive",
+      "detail": "Directive 2094-011 issued: decommission Vault Reserve coolant distribution equipment. Transfer to Forge Works for repurposing."
+    },
+    {
+      "timestamp": "2094-04-25T15:00:00Z",
+      "event": "administrative",
+      "detail": "Colony population: 147 residents. Phase 3 expansion planning initiated. Preliminary site surveys underway."
+    },
+    {
+      "timestamp": "2094-07-15T10:00:00Z",
+      "event": "safety_review",
+      "detail": "Semi-annual safety review complete. All pods reporting nominal. No outstanding safety actions. Next review scheduled for Q1 2095."
+    }
+  ],
+  "comms": [
+    {
+      "timestamp": "2094-01-18T09:00:00Z",
+      "from": "artemis_ops",
+      "to": "all_pods",
+      "content": "reminder: Q1 resource allocation submissions due by end of month. please use the updated forms per directive 2092-042. late submissions will be processed in the following cycle"
+    },
+    {
+      "timestamp": "2094-03-05T14:30:00Z",
+      "from": "artemis_safety",
+      "to": "zephyr_ops",
+      "content": "received your contingency planning inquiry. reviewed with ops team — Helios power infrastructure has been stable for 2+ years with no unplanned outages. no action required at this time. keep us posted if anything changes on your end"
+    },
+    {
+      "timestamp": "2094-04-12T11:00:00Z",
+      "from": "artemis_ops",
+      "to": "vault_manager",
+      "content": "acknowledged your note about the water reserve status. current ops plan directs all water needs through Aquifer Module per standard procedures. appreciate you keeping the documentation up to date"
+    },
+    {
+      "timestamp": "2094-05-20T16:15:00Z",
+      "from": "artemis_social",
+      "to": "all_pods",
+      "content": "movie night this Friday in the Artemis common area. showing 'The Martian' for the 47th time by popular demand. snacks courtesy of Hydroponics Bay (thanks team!)"
+    },
+    {
+      "timestamp": "2094-07-02T08:30:00Z",
+      "from": "artemis_planning",
+      "to": "all_pods",
+      "content": "Phase 3 expansion survey team heading to the north rim this week. Sentinel providing overwatch. Please direct any logistical support requests through standard channels"
+    }
+  ]
+}

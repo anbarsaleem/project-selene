@@ -1,0 +1,103 @@
+{
+  "id": "hydroponics",
+  "name": "Hydroponics Bay",
+  "role": "Food production and agricultural systems",
+  "population": 14,
+  "status": "nominal",
+  "established": "2092-02-10",
+  "metadata": {
+    "crop_yield_kg_day": 420,
+    "grow_bays": 24,
+    "water_consumption_l_day": 8400,
+    "active_crop_varieties": 18,
+    "nutrient_solution_cycles": 3,
+    "prometheus_water_share_pct": 15
+  },
+  "dependencies": [
+    {
+      "pod_id": "aquifer",
+      "resource": "irrigation_water",
+      "criticality": "high",
+      "notes": "Primary water supply for all grow bays and nutrient solution mixing"
+    },
+    {
+      "pod_id": "zephyr",
+      "resource": "co2_balance",
+      "criticality": "medium",
+      "notes": "CO2/O2 atmospheric exchange for optimal growing conditions"
+    },
+    {
+      "pod_id": "helios",
+      "resource": "electrical_power",
+      "criticality": "high",
+      "notes": "Powers grow lights, climate control, and irrigation pumps"
+    }
+  ],
+  "supplies": [
+    { "pod_id": "artemis", "resource": "fresh_produce" },
+    { "pod_id": "prometheus", "resource": "nutrient_compounds" },
+    { "pod_id": "medica", "resource": "dietary_supplements" }
+  ],
+  "logs": [
+    {
+      "timestamp": "2092-09-12T08:00:00Z",
+      "event": "commissioning",
+      "detail": "Grow bays 19-24 online. Full agricultural capacity achieved across all 24 bays."
+    },
+    {
+      "timestamp": "2093-01-20T11:00:00Z",
+      "event": "crop_report",
+      "detail": "Q4 2092 yield report: 37,800 kg total. Exceeding targets by 8%. Leafy greens performing above projections."
+    },
+    {
+      "timestamp": "2093-04-05T14:30:00Z",
+      "event": "maintenance",
+      "detail": "Nutrient solution mixing tank 2 serviced. Replaced agitator motor and recalibrated pH sensors."
+    },
+    {
+      "timestamp": "2093-07-18T09:00:00Z",
+      "event": "crop_introduction",
+      "detail": "New wheat variety (Luna-7) introduced in bays 11-12. Expected first harvest in 90 days."
+    },
+    {
+      "timestamp": "2093-09-25T16:00:00Z",
+      "event": "infrastructure_change",
+      "detail": "Secondary irrigation circuit now shared with Prometheus Lab for synthesis water draw per project 2093-P4. Capacity allocated: 15% of primary Aquifer feed. No impact on crop irrigation at current demand levels."
+    },
+    {
+      "timestamp": "2094-01-08T07:30:00Z",
+      "event": "inspection",
+      "detail": "Annual grow light inspection complete. 6 units replaced in bays 3 and 7. All bays within PAR specifications."
+    },
+    {
+      "timestamp": "2094-04-14T12:00:00Z",
+      "event": "crop_report",
+      "detail": "Q1 2094 yield report: 38,200 kg. Stable. Luna-7 wheat performing well in test bays."
+    },
+    {
+      "timestamp": "2094-06-30T15:20:00Z",
+      "event": "software_update",
+      "detail": "Climate control system updated to v4.2. Improved humidity response curves for tropical crop bays."
+    }
+  ],
+  "comms": [
+    {
+      "timestamp": "2094-02-05T10:30:00Z",
+      "from": "hydroponics_lead",
+      "to": "prometheus_lab",
+      "content": "hey — just confirming the synthesis water draw is still running through our secondary circuit. flow has been stable, no issues on our end. let us know if you need any pressure adjustments"
+    },
+    {
+      "timestamp": "2094-04-22T11:15:00Z",
+      "from": "hydroponics_lead",
+      "to": "artemis_admin",
+      "content": "fyi prometheus is pulling about 15% of our aquifer allocation for their synthesis work now. totally fine at current levels but worth noting for Q3 capacity planning — if aquifer throughput dips we'd both feel it same day"
+    },
+    {
+      "timestamp": "2094-06-08T08:45:00Z",
+      "from": "hydroponics_lead",
+      "to": "zephyr_ops",
+      "content": "CO2 levels in bays 15-18 running a touch high this week. can you check if the atmospheric exchange rates got adjusted during your last calibration cycle?"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "id": "prometheus",
+  "name": "Prometheus Lab",
+  "role": "Research and pharmaceutical synthesis",
+  "population": 11,
+  "status": "nominal",
+  "established": "2092-03-15",
+  "metadata": {
+    "synthesis_batches_day": 8,
+    "active_research_projects": 5,
+    "water_source": "aquifer-direct",
+    "pharmaceutical_compounds": 34,
+    "lab_modules": 6,
+    "cleanroom_class": "ISO-7"
+  },
+  "dependencies": [
+    {
+      "pod_id": "aquifer",
+      "resource": "synthesis_water",
+      "criticality": "medium",
+      "notes": "Ultra-purified water for pharmaceutical synthesis processes"
+    },
+    {
+      "pod_id": "hydroponics",
+      "resource": "nutrient_compounds",
+      "criticality": "high",
+      "notes": "Biological precursors and plant-derived compounds for drug synthesis"
+    }
+  ],
+  "supplies": [
+    { "pod_id": "medica", "resource": "pharmaceuticals" }
+  ],
+  "logs": [
+    {
+      "timestamp": "2092-10-01T09:00:00Z",
+      "event": "commissioning",
+      "detail": "Lab module 6 certified. Full pharmaceutical synthesis capacity online."
+    },
+    {
+      "timestamp": "2093-02-12T14:00:00Z",
+      "event": "research",
+      "detail": "Low-gravity crystallization study Phase 2 initiated. Expected duration: 8 months."
+    },
+    {
+      "timestamp": "2093-05-08T10:30:00Z",
+      "event": "maintenance",
+      "detail": "Cleanroom HEPA filters replaced in modules 2 and 4. Particle count verified at ISO-7 compliance."
+    },
+    {
+      "timestamp": "2093-09-30T16:00:00Z",
+      "event": "infrastructure_change",
+      "detail": "Synthesis water supply rerouted through Hydroponics irrigation circuit per pipe consolidation project 2093-P4. Previous direct Aquifer connection sealed. Water quality testing confirms no impact on synthesis purity requirements."
+    },
+    {
+      "timestamp": "2094-01-15T08:00:00Z",
+      "event": "production_report",
+      "detail": "Q4 2093 pharmaceutical output: 2,040 batches. Meeting all Medica Ward standing orders."
+    },
+    {
+      "timestamp": "2094-03-22T11:45:00Z",
+      "event": "research",
+      "detail": "Low-gravity crystallization study Phase 2 complete. Results submitted to Earth-side review board."
+    },
+    {
+      "timestamp": "2094-05-10T13:30:00Z",
+      "event": "equipment",
+      "detail": "New mass spectrometer installed in module 3. Calibration and validation complete."
+    },
+    {
+      "timestamp": "2094-07-20T09:15:00Z",
+      "event": "software_update",
+      "detail": "Lab information management system updated to v6.0. Improved batch tracking and quality assurance workflows."
+    }
+  ],
+  "comms": [
+    {
+      "timestamp": "2094-01-22T15:40:00Z",
+      "from": "prometheus_lead",
+      "to": "hydroponics_lead",
+      "content": "quick reminder that our synthesis water comes through your irrigation circuit now, not direct from aquifer. response time on any pressure issues might be a bit slower going through the shared line. not worried, just wanted it documented somewhere"
+    },
+    {
+      "timestamp": "2094-05-30T09:00:00Z",
+      "from": "prometheus_lead",
+      "to": "medica_staff",
+      "content": "batch 2094-0530 shipping today — antibiotic series and the custom anti-nausea compound you requested. let me know if dosage specs need adjustment"
+    }
+  ]
+}

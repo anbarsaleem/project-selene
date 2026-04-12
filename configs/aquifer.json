@@ -1,0 +1,88 @@
+{
+  "id": "aquifer",
+  "name": "Aquifer Module",
+  "role": "Primary water recycling and distribution",
+  "population": 8,
+  "status": "nominal",
+  "established": "2092-01-20",
+  "metadata": {
+    "throughput_l_day": 42000,
+    "rated_capacity_l_day": 45000,
+    "recycling_efficiency_pct": 94.2,
+    "distribution_loops": 7,
+    "backup_systems": 0,
+    "filtration_stages": 5,
+    "reservoir_capacity_l": 120000
+  },
+  "dependencies": [
+    {
+      "pod_id": "helios",
+      "resource": "electrical_power",
+      "criticality": "high",
+      "notes": "Powers filtration pumps, UV sterilization, and distribution pressure systems"
+    },
+    {
+      "pod_id": "terminus",
+      "resource": "pump_components",
+      "criticality": "medium",
+      "notes": "Replacement pump housings and impeller assemblies from regolith-derived alloys"
+    }
+  ],
+  "supplies": [
+    { "pod_id": "helios", "resource": "coolant_water" },
+    { "pod_id": "hydroponics", "resource": "irrigation_water" },
+    { "pod_id": "zephyr", "resource": "humidity_feedstock" },
+    { "pod_id": "artemis", "resource": "potable_water" },
+    { "pod_id": "medica", "resource": "sterilization_water" },
+    { "pod_id": "terminus", "resource": "slurry_water" },
+    { "pod_id": "forge", "resource": "cooling_water" }
+  ],
+  "logs": [
+    {
+      "timestamp": "2092-08-10T06:00:00Z",
+      "event": "commissioning",
+      "detail": "Primary distribution loop fully operational. All seven sectors receiving nominal flow."
+    },
+    {
+      "timestamp": "2092-11-03T14:30:00Z",
+      "event": "maintenance",
+      "detail": "Filtration stage 3 membrane replaced ahead of schedule. Throughput restored to 94% efficiency."
+    },
+    {
+      "timestamp": "2093-02-18T09:15:00Z",
+      "event": "inspection",
+      "detail": "Annual reservoir integrity check passed. No micro-fractures detected in containment walls."
+    },
+    {
+      "timestamp": "2093-04-22T11:00:00Z",
+      "event": "capacity_change",
+      "detail": "Assumed distribution responsibility for sectors previously served by Vault Reserve secondary system. Throughput increased 18%. Operating within rated capacity."
+    },
+    {
+      "timestamp": "2093-06-15T08:45:00Z",
+      "event": "maintenance",
+      "detail": "Replaced pump assembly P2-7 with Terminus-fabricated unit. Performance nominal."
+    },
+    {
+      "timestamp": "2093-10-01T16:00:00Z",
+      "event": "infrastructure_change",
+      "detail": "Direct feed to Prometheus Lab decommissioned per pipe consolidation project 2093-P4. Prometheus synthesis water now routed through Hydroponics irrigation header. Net flow unchanged."
+    },
+    {
+      "timestamp": "2094-01-12T07:30:00Z",
+      "event": "software_update",
+      "detail": "Distribution control firmware updated to v3.8.1. Improved pressure balancing across loops."
+    },
+    {
+      "timestamp": "2094-03-28T13:20:00Z",
+      "event": "inspection",
+      "detail": "Bi-annual filtration audit complete. All five stages within tolerance. Next scheduled audit 2094-09."
+    },
+    {
+      "timestamp": "2094-05-19T10:00:00Z",
+      "event": "capacity_report",
+      "detail": "Monthly throughput report: averaging 41,200 L/day against rated capacity of 45,000 L/day. Utilization at 91.6%. Within operational norms."
+    }
+  ],
+  "comms": []
+}

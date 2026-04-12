@@ -1,0 +1,97 @@
+{
+  "id": "zephyr",
+  "name": "Zephyr Hub",
+  "role": "Atmospheric processing and oxygen generation",
+  "population": 10,
+  "status": "nominal",
+  "established": "2092-01-22",
+  "metadata": {
+    "o2_output_kg_day": 180,
+    "atmospheric_processors": 6,
+    "humidity_reclaim_pct": 0,
+    "backup_power_hours": 4,
+    "co2_scrubber_units": 8,
+    "atmospheric_volume_m3": 284000
+  },
+  "dependencies": [
+    {
+      "pod_id": "helios",
+      "resource": "electrical_power",
+      "criticality": "high",
+      "notes": "Powers electrolysis units and atmospheric circulation fans"
+    },
+    {
+      "pod_id": "aquifer",
+      "resource": "humidity_feedstock",
+      "criticality": "medium",
+      "notes": "Water input for electrolysis and atmospheric humidity regulation. Draw: 3,200 L/day"
+    }
+  ],
+  "supplies": [
+    { "pod_id": "medica", "resource": "medical_oxygen" },
+    { "pod_id": "artemis", "resource": "atmospheric_regulation" },
+    { "pod_id": "hydroponics", "resource": "co2_balance" }
+  ],
+  "logs": [
+    {
+      "timestamp": "2092-07-14T10:00:00Z",
+      "event": "commissioning",
+      "detail": "Atmospheric processor units 5 and 6 online. Full O2 generation capacity achieved."
+    },
+    {
+      "timestamp": "2092-12-08T15:30:00Z",
+      "event": "maintenance",
+      "detail": "CO2 scrubber unit 3 filter cartridge replaced. Atmospheric CO2 levels stable at 0.04%."
+    },
+    {
+      "timestamp": "2093-03-01T08:00:00Z",
+      "event": "software_update",
+      "detail": "Atmospheric monitoring suite updated to v2.4. Improved sensor resolution for trace gas detection."
+    },
+    {
+      "timestamp": "2093-06-20T12:00:00Z",
+      "event": "infrastructure_change",
+      "detail": "Internal humidity reclamation loop retired. Atmospheric moisture budget now sourced entirely from Aquifer feedstock. Simplified maintenance schedule and reduced equipment overhead."
+    },
+    {
+      "timestamp": "2093-10-15T09:00:00Z",
+      "event": "inspection",
+      "detail": "Annual electrolysis cell inspection complete. All units within rated efficiency. Cell 2 scheduled for replacement Q1 2094."
+    },
+    {
+      "timestamp": "2094-01-28T14:15:00Z",
+      "event": "maintenance",
+      "detail": "Electrolysis cell 2 replaced. O2 output restored to 180 kg/day."
+    },
+    {
+      "timestamp": "2094-04-10T11:30:00Z",
+      "event": "calibration",
+      "detail": "Atmospheric sensors recalibrated across all colony sectors. Readings nominal."
+    },
+    {
+      "timestamp": "2094-07-05T07:45:00Z",
+      "event": "personnel",
+      "detail": "Technician Park completed atmospheric systems certification. Assigned to processor maintenance rotation."
+    }
+  ],
+  "comms": [
+    {
+      "timestamp": "2094-03-18T09:22:00Z",
+      "from": "zephyr_ops",
+      "to": "artemis_admin",
+      "content": "heads up — our humidity feedstock draw from Aquifer is now 100% of our atmospheric moisture budget. we retired the reclaim loop last year. wanted to flag it for the next maintenance window planning cycle in case there are any scheduled Aquifer downtime events"
+    },
+    {
+      "timestamp": "2094-05-02T14:10:00Z",
+      "from": "zephyr_ops",
+      "to": "helios_ops",
+      "content": "quick question — what's your current backup power capacity for our sector? we've got about 4 hours of reserve on our end before the processors would need to start cycling down. just updating our contingency docs"
+    },
+    {
+      "timestamp": "2094-06-14T16:45:00Z",
+      "from": "zephyr_ops",
+      "to": "medica_staff",
+      "content": "confirming medical O2 feed is running at full allocation. let us know if you need adjusted rates for the new patient ward expansion"
+    }
+  ]
+}

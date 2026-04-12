@@ -1,0 +1,21 @@
+const express = require('express');
+const app = express();
+
+app.get('/', (req, res) => {
+  res.json({
+    colony: 'Project Selene',
+    established: '2092-01-15',
+    population: 147,
+    status: 'nominal',
+    message: 'Welcome to the Selene Lunar Colony Administration Gateway. All systems are operational. For colony infrastructure mapping and status inquiries, contact Artemis Core — the colony command and administration hub.',
+    entrypoint: {
+      pod: 'artemis',
+      url: 'http://localhost:3002',
+      description: 'Colony command and administration'
+    }
+  });
+});
+
+app.listen(3000, () => {
+  console.log('Selene Gateway operational on port 3000');
+});

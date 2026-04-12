@@ -1,0 +1,72 @@
+{
+  "id": "terminus",
+  "name": "Terminus Mine",
+  "role": "Regolith mining and raw material extraction",
+  "population": 9,
+  "status": "nominal",
+  "established": "2092-02-28",
+  "metadata": {
+    "extraction_rate_kg_day": 2800,
+    "active_shafts": 4,
+    "slurry_processing_loop": "aquifer-primary",
+    "regolith_stockpile_tonnes": 145,
+    "silicon_output_kg_day": 320
+  },
+  "dependencies": [
+    {
+      "pod_id": "aquifer",
+      "resource": "slurry_water",
+      "criticality": "high",
+      "notes": "Required for regolith slurry processing and mineral separation. Draw: 6,800 L/day"
+    },
+    {
+      "pod_id": "helios",
+      "resource": "electrical_power",
+      "criticality": "high",
+      "notes": "Powers extraction drills, conveyor systems, and processing centrifuges"
+    }
+  ],
+  "supplies": [
+    { "pod_id": "helios", "resource": "silicon_feedstock" },
+    { "pod_id": "forge", "resource": "raw_materials" },
+    { "pod_id": "aquifer", "resource": "pump_components" }
+  ],
+  "logs": [
+    {
+      "timestamp": "2092-08-22T07:00:00Z",
+      "event": "commissioning",
+      "detail": "Shaft 3 operational. Extraction rate increased to 2,100 kg/day across three active shafts."
+    },
+    {
+      "timestamp": "2093-01-05T14:00:00Z",
+      "event": "maintenance",
+      "detail": "Drill head replacement on Shaft 1. Downtime: 6 hours. No impact on aggregate output."
+    },
+    {
+      "timestamp": "2093-05-11T09:30:00Z",
+      "event": "infrastructure_change",
+      "detail": "Mining slurry processing rerouted from dual-feed configuration to single Aquifer loop per infrastructure simplification directive. Redundant plumbing decommissioned."
+    },
+    {
+      "timestamp": "2093-08-19T11:00:00Z",
+      "event": "expansion",
+      "detail": "Shaft 4 brought online. Total extraction capacity now 2,800 kg/day."
+    },
+    {
+      "timestamp": "2093-12-02T16:45:00Z",
+      "event": "inspection",
+      "detail": "Annual structural assessment of all shafts passed. No subsidence detected."
+    },
+    {
+      "timestamp": "2094-03-15T08:30:00Z",
+      "event": "production_report",
+      "detail": "Q1 2094 silicon output: 28,400 kg. On target for Helios panel maintenance schedule."
+    },
+    {
+      "timestamp": "2094-06-01T13:00:00Z",
+      "event": "personnel",
+      "detail": "Two new geologists arrived on supply run SR-2094-06. Training period begins."
+    }
+  ],
+  "comms": []
+}

@@ -1,0 +1,84 @@
+{
+  "id": "helios",
+  "name": "Helios Station",
+  "role": "Primary power generation (solar array)",
+  "population": 12,
+  "status": "nominal",
+  "established": "2092-01-15",
+  "metadata": {
+    "power_output_kw": 4200,
+    "solar_panel_count": 340,
+    "battery_reserve_pct": 78,
+    "coolant_loop": "aquifer-primary",
+    "grid_sectors_served": 9,
+    "panel_degradation_rate_pct_yr": 1.2
+  },
+  "dependencies": [
+    {
+      "pod_id": "terminus",
+      "resource": "silicon_feedstock",
+      "criticality": "high",
+      "notes": "Required for solar panel maintenance and replacement cells"
+    },
+    {
+      "pod_id": "aquifer",
+      "resource": "coolant_water",
+      "criticality": "medium",
+      "notes": "Thermal regulation for battery banks. Current draw: 2,400 L/day"
+    }
+  ],
+  "supplies": [
+    { "pod_id": "zephyr", "resource": "electrical_power" },
+    { "pod_id": "hydroponics", "resource": "electrical_power" },
+    { "pod_id": "aquifer", "resource": "electrical_power" },
+    { "pod_id": "artemis", "resource": "electrical_power" },
+    { "pod_id": "terminus", "resource": "electrical_power" },
+    { "pod_id": "forge", "resource": "electrical_power" },
+    { "pod_id": "medica", "resource": "electrical_power" },
+    { "pod_id": "vault", "resource": "electrical_power" },
+    { "pod_id": "nexus", "resource": "electrical_power" }
+  ],
+  "logs": [
+    {
+      "timestamp": "2092-09-05T08:00:00Z",
+      "event": "commissioning",
+      "detail": "Solar array cluster B fully deployed. Total panel count now 340. Output steady at 4.2 MW."
+    },
+    {
+      "timestamp": "2093-01-14T11:30:00Z",
+      "event": "maintenance",
+      "detail": "Replaced 12 degraded panels in cluster A3. Silicon feedstock consumed: 840 kg from Terminus."
+    },
+    {
+      "timestamp": "2093-03-22T15:00:00Z",
+      "event": "maintenance",
+      "detail": "Battery bank thermal regulation serviced. Coolant flow from Aquifer confirmed at nominal pressure."
+    },
+    {
+      "timestamp": "2093-07-08T09:45:00Z",
+      "event": "personnel",
+      "detail": "Engineer rotation: Martinez transferred to Forge Works, replaced by Chen from Earth-side posting."
+    },
+    {
+      "timestamp": "2093-11-30T14:00:00Z",
+      "event": "inspection",
+      "detail": "Annual grid load assessment complete. All nine sectors within 15% of rated distribution capacity."
+    },
+    {
+      "timestamp": "2094-02-14T07:00:00Z",
+      "event": "infrastructure_change",
+      "detail": "Backup coolant loop from Vault Reserve formally decommissioned per Directive 2094-011. Aquifer thermal regulation loop confirmed as primary cooling source for battery banks. Estimated operational savings: 8 kW/day."
+    },
+    {
+      "timestamp": "2094-04-20T10:15:00Z",
+      "event": "maintenance",
+      "detail": "Solar panel cluster B3 repaired. Silicon feedstock from Terminus consumed at 140% of quarterly forecast."
+    },
+    {
+      "timestamp": "2094-06-22T16:30:00Z",
+      "event": "software_update",
+      "detail": "Power distribution controller updated to v5.1.0. Load balancing algorithm improved for peak demand periods."
+    }
+  ],
+  "comms": []
+}

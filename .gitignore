@@ -1,0 +1,9 @@
+CLAUDE.md
+ANSWER_KEY.md
+README-FULL.md
+docs/
+scripts/
+solutions/
+node_modules/
+*.log
+.DS_Store

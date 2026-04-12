@@ -1,0 +1,155 @@
+networks:
+  selene-net:
+    driver: bridge
+
+services:
+  gateway:
+    build: ./gateway
+    ports:
+      - "3000:3000"
+    networks:
+      - selene-net
+
+  helios:
+    build: ./pod-service
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+    volumes:
+      - ./configs/helios.json:/config/pod.json:ro
+    networks:
+      - selene-net
+
+  artemis:
+    build: ./pod-service
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+    volumes:
+      - ./configs/artemis.json:/config/pod.json:ro
+    networks:
+      - selene-net
+
+  hydroponics:
+    build: ./pod-service
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+    volumes:
+      - ./configs/hydroponics.json:/config/pod.json:ro
+    networks:
+      - selene-net
+
+  aquifer:
+    build: ./pod-service
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+    volumes:
+      - ./configs/aquifer.json:/config/pod.json:ro
+    networks:
+      - selene-net
+
+  zephyr:
+    build: ./pod-service
+    ports:
+      - "3005:3005"
+    environment:
+      - PORT=3005
+    volumes:
+      - ./configs/zephyr.json:/config/pod.json:ro
+    networks:
+      - selene-net
+
+  prometheus:
+    build: ./pod-service
+    ports:
+      - "3006:3006"
+    environment:
+      - PORT=3006
+    volumes:
+      - ./configs/prometheus.json:/config/pod.json:ro
+    networks:
+      - selene-net
+
+  medica:
+    build: ./pod-service
+    ports:
+      - "3007:3007"
+    environment:
+      - PORT=3007
+    volumes:
+      - ./configs/medica.json:/config/pod.json:ro
+    networks:
+      - selene-net
+
+  terminus:
+    build: ./pod-service
+    ports:
+      - "3008:3008"
+    environment:
+      - PORT=3008
+    volumes:
+      - ./configs/terminus.json:/config/pod.json:ro
+    networks:
+      - selene-net
+
+  nexus:
+    build: ./pod-service
+    ports:
+      - "3009:3009"
+    environment:
+      - PORT=3009
+    volumes:
+      - ./configs/nexus.json:/config/pod.json:ro
+    networks:
+      - selene-net
+
+  forge:
+    build: ./pod-service
+    ports:
+      - "3010:3010"
+    environment:
+      - PORT=3010
+    volumes:
+      - ./configs/forge.json:/config/pod.json:ro
+    networks:
+      - selene-net
+
+  vault:
+    build: ./pod-service
+    ports:
+      - "3011:3011"
+    environment:
+      - PORT=3011
+    volumes:
+      - ./configs/vault.json:/config/pod.json:ro
+    networks:
+      - selene-net
+
+  sentinel:
+    build: ./pod-service
+    ports:
+      - "3012:3012"
+    environment:
+      - PORT=3012
+    volumes:
+      - ./configs/sentinel.json:/config/pod.json:ro
+    networks:
+      - selene-net
+
+  rover:
+    build: ./rover
+    depends_on:
+      - gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - LLM_API_KEY=${LLM_API_KEY}
+      - GATEWAY_URL=http://gateway:3000
+    networks:
+      - selene-net

@@ -1,0 +1,88 @@
+{
+  "id": "vault",
+  "name": "Vault Reserve",
+  "role": "Emergency reserves and backup systems",
+  "population": 7,
+  "status": "nominal",
+  "established": "2092-01-25",
+  "metadata": {
+    "emergency_ration_days": 90,
+    "active_reserves": ["food", "medical_equipment", "spare_parts"],
+    "decommissioned_reserves": ["water_backup", "coolant_distribution"],
+    "storage_capacity_m3": 4200,
+    "environmental_controls": "standard"
+  },
+  "dependencies": [
+    {
+      "pod_id": "helios",
+      "resource": "electrical_power",
+      "criticality": "medium",
+      "notes": "Powers climate control, lighting, and inventory management systems"
+    }
+  ],
+  "supplies": [
+    { "pod_id": "artemis", "resource": "emergency_rations" }
+  ],
+  "logs": [
+    {
+      "timestamp": "2092-06-10T08:00:00Z",
+      "event": "commissioning",
+      "detail": "Full emergency reserve stockpile verified. All categories stocked to policy levels."
+    },
+    {
+      "timestamp": "2092-12-01T14:00:00Z",
+      "event": "inventory",
+      "detail": "Annual reserve audit complete. Food stores at 90 days. Medical equipment inventory nominal. Water backup system operational."
+    },
+    {
+      "timestamp": "2093-03-15T10:30:00Z",
+      "event": "infrastructure_change",
+      "detail": "Secondary water reserve system transferred to maintenance reserve status per Directive 2093-089. Capacity reallocated to support Sentinel Array expansion project. Aquifer Module confirmed as primary water distribution point for all colony sectors."
+    },
+    {
+      "timestamp": "2093-06-28T11:00:00Z",
+      "event": "inventory",
+      "detail": "Mid-year reserve audit. Food stores restocked to 90-day level. Spare parts inventory updated with Forge Works deliveries."
+    },
+    {
+      "timestamp": "2093-10-20T09:00:00Z",
+      "event": "maintenance",
+      "detail": "Storage climate control units serviced. Humidity levels in food storage sectors adjusted to optimal range."
+    },
+    {
+      "timestamp": "2094-01-05T15:00:00Z",
+      "event": "infrastructure_change",
+      "detail": "Coolant distribution equipment formally transferred to Forge Works for repurposing per Directive 2094-011. Vault water-related infrastructure responsibilities concluded."
+    },
+    {
+      "timestamp": "2094-03-30T08:30:00Z",
+      "event": "inventory",
+      "detail": "Q1 2094 reserve audit complete. Food: 90 days. Medical equipment: nominal. Spare parts: nominal. All categories within policy."
+    },
+    {
+      "timestamp": "2094-06-15T14:00:00Z",
+      "event": "personnel",
+      "detail": "Reserve manager Torres completed annual certification. Inventory management procedures reviewed and approved."
+    }
+  ],
+  "comms": [
+    {
+      "timestamp": "2094-02-10T11:20:00Z",
+      "from": "vault_manager",
+      "to": "artemis_admin",
+      "content": "just a note for the records — water reserve system has been in maintenance reserve status since directive 2093-089. no active water backup capability at this time. all water needs should be directed to Aquifer Module per current operating procedures"
+    },
+    {
+      "timestamp": "2094-04-18T09:30:00Z",
+      "from": "vault_manager",
+      "to": "forge_ops",
+      "content": "confirming the last of the coolant distribution piping was picked up by your team last week. paperwork is filed. thanks for handling the removal"
+    },
+    {
+      "timestamp": "2094-06-22T16:00:00Z",
+      "from": "vault_staff",
+      "to": "artemis_admin",
+      "content": "HVAC unit in sector 3 storage is acting up again. put in a maintenance request but wanted to flag it in case the temperature alerts trigger overnight. it's the same unit from last quarter"
+    }
+  ]
+}
