@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Selene</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #000;
+    overflow: hidden;
+    font-family: 'Press Start 2P', monospace;
+    color: #fff;
+    image-rendering: pixelated;
+  }
+  canvas {
+    display: block;
+    position: absolute;
+    top: 0; left: 0;
+  }
+  #dialogue-box {
+    display: none;
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(720px, 90vw);
+    background: #000;
+    border: 3px solid #fff;
+    padding: 24px 28px;
+    z-index: 10;
+  }
+  #speaker {
+    font-size: 10px;
+    color: #ffcc00;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  #dialogue-text {
+    font-size: 11px;
+    line-height: 1.9;
+    color: #fff;
+    min-height: 60px;
+  }
+  #prompt {
+    font-size: 9px;
+    color: #666;
+    margin-top: 14px;
+    text-align: right;
+  }
+  #prompt.visible { color: #888; }
+  #prompt.visible::after {
+    content: ' ▼';
+    animation: blink 0.8s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  #title-screen {
+    display: none;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 20;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  #title-text {
+    font-size: 28px;
+    letter-spacing: 6px;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(100,180,255,0.5);
+    margin-bottom: 50px;
+    opacity: 0;
+    transition: opacity 2s;
+  }
+  #subtitle {
+    font-size: 10px;
+    color: #667;
+    letter-spacing: 3px;
+    margin-bottom: 60px;
+    opacity: 0;
+    transition: opacity 2s;
+  }
+  #start-prompt {
+    font-size: 10px;
+    color: #888;
+    opacity: 0;
+    transition: opacity 1s;
+    cursor: pointer;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+  #start-prompt.visible { opacity: 1; }
+  #overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #000;
+    z-index: 30;
+    opacity: 1;
+    transition: opacity 1.5s;
+    pointer-events: none;
+  }
+  #end-screen {
+    display: none;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 15;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  #end-screen .info-block {
+    text-align: center;
+    max-width: 600px;
+  }
+  #end-screen .info-block h2 {
+    font-size: 14px;
+    color: #ffcc00;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+  }
+  #end-screen .info-block p {
+    font-size: 9px;
+    line-height: 2.2;
+    color: #aaa;
+    margin-bottom: 15px;
+  }
+  #end-screen .info-block code {
+    color: #5f5;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+  }
+  #end-screen .info-block a {
+    color: #5af;
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+
+<div id="overlay"></div>
+<canvas id="bg"></canvas>
+<canvas id="fg"></canvas>
+
+<div id="title-screen">
+  <div id="title-text">PROJECT SELENE</div>
+  <div id="subtitle">LUNAR COLONY ADMINISTRATION</div>
+  <div id="start-prompt">[ PRESS ANY KEY ]</div>
+</div>
+
+<div id="dialogue-box">
+  <div id="speaker"></div>
+  <div id="dialogue-text"></div>
+  <div id="prompt">▼</div>
+</div>
+
+<div id="end-screen">
+  <div class="info-block">
+    <h2>TRANSMISSION RECEIVED</h2>
+    <p>Colony gateway operational.<br>
+    Your mission briefing is ready.</p>
+    <p style="margin-top:30px;"><a href="https://github.com/latent-defense/project-selene/blob/main/candidate/README.md">→ Open Mission Briefing</a></p>
+  </div>
+</div>
+
+<script>
+// =========================================================================
+// PIXEL SPRITE DEFINITIONS — each is a 2D array of 0/1
+// =========================================================================
+
+const SPRITES = {
+  // 16×16 lunar colony dome
+  dome: [
+    [0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0],
+    [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
+    [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+    [0,0,1,1,1,0,0,1,1,0,0,1,1,1,0,0],
+    [0,0,1,1,0,0,0,1,1,0,0,0,1,1,0,0],
+    [0,1,1,1,0,0,0,1,1,0,0,0,1,1,1,0],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,0,0,1,1,0,0,0,0,1,1,0,0,1,1],
+    [1,1,0,0,1,1,0,0,0,0,1,1,0,0,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  ],
+
+  // 12×12 small pod
+  pod_small: [
+    [0,0,0,1,1,1,1,1,1,0,0,0],
+    [0,0,1,1,1,1,1,1,1,1,0,0],
+    [0,1,1,1,0,1,1,0,1,1,1,0],
+    [0,1,1,0,0,1,1,0,0,1,1,0],
+    [1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,0,0,1,0,0,1,0,0,1,1],
+    [1,1,0,0,1,0,0,1,0,0,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1],
+  ],
+
+  // 20×14 commander character (upper body portrait)
+  commander: [
+    [0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
+    [0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0],
+    [0,0,0,0,0,1,1,0,0,1,1,0,0,1,1,0,0,0,0,0],
+    [0,0,0,0,0,1,1,0,0,1,1,0,0,1,1,0,0,0,0,0],
+    [0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0],
+    [0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0],
+    [0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0],
+    [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
+    [0,0,1,1,0,0,1,1,1,1,1,1,1,1,0,0,1,1,0,0],
+    [0,0,1,1,0,0,1,1,1,1,1,1,1,1,0,0,1,1,0,0],
+    [0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
+    [0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
+  ],
+
+  // 16×10 antenna/relay tower
+  antenna: [
+    [0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+    [0,0,1,0,0,0,0,1,1,0,0,0,0,1,0,0],
+    [0,0,0,1,0,0,0,1,1,0,0,0,1,0,0,0],
+    [0,0,0,0,1,0,0,1,1,0,0,1,0,0,0,0],
+    [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+    [0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0],
+  ],
+
+  // 14×8 rover vehicle
+  rover_vehicle: [
+    [0,0,0,0,1,1,1,1,1,1,0,0,0,0],
+    [0,0,0,1,1,1,1,1,1,1,1,0,0,0],
+    [0,0,1,1,1,0,0,0,0,1,1,1,0,0],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,0],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [0,1,1,0,0,0,0,0,0,0,0,1,1,0],
+    [0,0,1,1,0,0,0,0,0,0,1,1,0,0],
+  ],
+
+  // 8×8 moon
+  moon: [
+    [0,0,1,1,1,1,0,0],
+    [0,1,1,1,0,1,1,0],
+    [1,1,0,1,1,1,1,1],
+    [1,1,1,1,1,0,1,1],
+    [1,1,1,0,1,1,1,1],
+    [1,0,1,1,1,1,1,1],
+    [0,1,1,1,1,0,1,0],
+    [0,0,1,1,1,1,0,0],
+  ],
+
+  // 10×10 earth
+  earth: [
+    [0,0,0,1,1,1,1,0,0,0],
+    [0,0,1,0,0,1,1,1,0,0],
+    [0,1,0,0,1,1,0,1,1,0],
+    [1,1,0,1,1,0,0,0,1,1],
+    [1,0,0,1,1,1,0,0,0,1],
+    [1,0,1,1,0,1,1,0,0,1],
+    [1,1,1,0,0,0,1,1,1,1],
+    [0,1,1,1,0,0,1,1,1,0],
+    [0,0,1,1,1,1,1,1,0,0],
+    [0,0,0,1,1,1,1,0,0,0],
+  ],
+
+  // 16×16 water drop
+  water: [
+    [0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0],
+    [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+    [0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0],
+    [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+    [0,0,1,1,1,1,0,0,1,1,1,1,1,1,0,0],
+    [0,0,1,1,1,0,0,0,0,1,1,1,1,1,0,0],
+    [0,1,1,1,1,0,0,0,1,1,1,1,1,1,1,0],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+    [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+    [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+    [0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0],
+    [0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0],
+  ],
+};
+
+// =========================================================================
+// CANVAS + RENDERING
+// =========================================================================
+
+const bgCanvas = document.getElementById('bg');
+const fgCanvas = document.getElementById('fg');
+const bgCtx = bgCanvas.getContext('2d');
+const fgCtx = fgCanvas.getContext('2d');
+
+let W, H;
+function resize() {
+  W = window.innerWidth;
+  H = window.innerHeight;
+  bgCanvas.width = fgCanvas.width = W;
+  bgCanvas.height = fgCanvas.height = H;
+}
+resize();
+window.addEventListener('resize', resize);
+
+function drawSprite(ctx, sprite, x, y, scale, color = '#fff', alpha = 1.0) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = color;
+  for (let row = 0; row < sprite.length; row++) {
+    for (let col = 0; col < sprite[row].length; col++) {
+      if (sprite[row][col]) {
+        ctx.fillRect(
+          Math.floor(x + col * scale),
+          Math.floor(y + row * scale),
+          scale, scale
+        );
+      }
+    }
+  }
+  ctx.restore();
+}
+
+// =========================================================================
+// STARFIELD
+// =========================================================================
+
+const stars = [];
+for (let i = 0; i < 200; i++) {
+  stars.push({
+    x: Math.random() * 2000,
+    y: Math.random() * 1200,
+    size: Math.random() < 0.8 ? 1 : 2,
+    twinkleSpeed: 0.5 + Math.random() * 2,
+    twinkleOffset: Math.random() * Math.PI * 2,
+    brightness: 0.3 + Math.random() * 0.7,
+  });
+}
+
+function drawStars(t) {
+  for (const s of stars) {
+    const flicker = 0.5 + 0.5 * Math.sin(t * s.twinkleSpeed + s.twinkleOffset);
+    const alpha = s.brightness * flicker;
+    bgCtx.fillStyle = `rgba(255,255,255,${alpha})`;
+    bgCtx.fillRect(s.x % W, s.y % H, s.size, s.size);
+  }
+}
+
+// =========================================================================
+// LUNAR SURFACE
+// =========================================================================
+
+let surfacePoints = [];
+function generateSurface() {
+  surfacePoints = [];
+  const surfaceY = H * 0.72;
+  const segments = Math.ceil(W / 4);
+  for (let i = 0; i <= segments; i++) {
+    const x = (i / segments) * W;
+    const y = surfaceY
+      + Math.sin(i * 0.02) * 15
+      + Math.sin(i * 0.05) * 8
+      + Math.sin(i * 0.13) * 4;
+    surfacePoints.push({ x, y });
+  }
+}
+generateSurface();
+window.addEventListener('resize', generateSurface);
+
+function drawSurface(alpha = 1.0) {
+  bgCtx.save();
+  bgCtx.globalAlpha = alpha;
+  bgCtx.fillStyle = '#1a1a2e';
+  bgCtx.beginPath();
+  bgCtx.moveTo(0, H);
+  for (const p of surfacePoints) {
+    bgCtx.lineTo(p.x, p.y);
+  }
+  bgCtx.lineTo(W, H);
+  bgCtx.fill();
+
+  // Subtle surface texture
+  bgCtx.fillStyle = '#222244';
+  for (const p of surfacePoints) {
+    if (Math.random() < 0.03) {
+      const craterSize = 2 + Math.random() * 4;
+      bgCtx.fillRect(p.x - craterSize/2, p.y + 5 + Math.random() * 30, craterSize, craterSize * 0.6);
+    }
+  }
+  bgCtx.restore();
+}
+
+// =========================================================================
+// COLONY SCENE
+// =========================================================================
+
+function drawColonyScene(t, alpha = 1.0) {
+  const surfaceY = H * 0.72;
+  const cx = W / 2;
+
+  // Main dome (Artemis Core — center)
+  drawSprite(fgCtx, SPRITES.dome, cx - 8*4, surfaceY - 12*4 - 8, 4, '#8899cc', alpha);
+
+  // Left pods
+  drawSprite(fgCtx, SPRITES.pod_small, cx - 200, surfaceY - 8*3 - 4, 3, '#7788aa', alpha);
+  drawSprite(fgCtx, SPRITES.pod_small, cx - 340, surfaceY - 8*3 - 2, 3, '#6677aa', alpha);
+  drawSprite(fgCtx, SPRITES.dome, cx - 480, surfaceY - 12*3 - 6, 3, '#5566aa', alpha);
+
+  // Right pods
+  drawSprite(fgCtx, SPRITES.pod_small, cx + 130, surfaceY - 8*3 - 4, 3, '#7788aa', alpha);
+  drawSprite(fgCtx, SPRITES.pod_small, cx + 270, surfaceY - 8*3 - 2, 3, '#6677aa', alpha);
+  drawSprite(fgCtx, SPRITES.dome, cx + 380, surfaceY - 12*3 - 6, 3, '#5566aa', alpha);
+
+  // Antenna
+  drawSprite(fgCtx, SPRITES.antenna, cx + 60, surfaceY - 10*3 - 30, 3, '#aabbdd', alpha);
+
+  // Rover on surface
+  const roverX = cx - 100 + Math.sin(t * 0.3) * 20;
+  drawSprite(fgCtx, SPRITES.rover_vehicle, roverX, surfaceY - 8*2 + 6, 2, '#99aacc', alpha);
+
+  // Connection lines between pods (glowing)
+  fgCtx.save();
+  fgCtx.globalAlpha = alpha * (0.15 + 0.1 * Math.sin(t * 1.5));
+  fgCtx.strokeStyle = '#4466cc';
+  fgCtx.lineWidth = 1;
+  const nodes = [
+    [cx, surfaceY - 30],
+    [cx - 200, surfaceY - 16],
+    [cx - 340, surfaceY - 14],
+    [cx - 480, surfaceY - 24],
+    [cx + 130, surfaceY - 16],
+    [cx + 270, surfaceY - 14],
+    [cx + 380, surfaceY - 24],
+  ];
+  for (let i = 1; i < nodes.length; i++) {
+    fgCtx.beginPath();
+    fgCtx.moveTo(nodes[0][0], nodes[0][1]);
+    fgCtx.lineTo(nodes[i][0], nodes[i][1]);
+    fgCtx.stroke();
+  }
+  // Some cross-connections
+  fgCtx.beginPath(); fgCtx.moveTo(nodes[1][0], nodes[1][1]); fgCtx.lineTo(nodes[4][0], nodes[4][1]); fgCtx.stroke();
+  fgCtx.beginPath(); fgCtx.moveTo(nodes[2][0], nodes[2][1]); fgCtx.lineTo(nodes[5][0], nodes[5][1]); fgCtx.stroke();
+  fgCtx.restore();
+
+  // Earth in the sky
+  drawSprite(fgCtx, SPRITES.earth, W * 0.15, H * 0.12, 4, '#4488cc', alpha * 0.6);
+
+  // Water drop near Aquifer area (subtle)
+  const waterAlpha = alpha * (0.3 + 0.2 * Math.sin(t * 0.8));
+  drawSprite(fgCtx, SPRITES.water, cx - 430, surfaceY - 70, 2, '#3366aa', waterAlpha);
+}
+
+// =========================================================================
+// DIALOGUE SYSTEM
+// =========================================================================
+
+const dialogueBox = document.getElementById('dialogue-box');
+const speakerEl = document.getElementById('speaker');
+const textEl = document.getElementById('dialogue-text');
+const promptEl = document.getElementById('prompt');
+
+const DIALOGUE = [
+  {
+    speaker: 'SELENE COLONY ADMIN',
+    text: 'Incoming transmission... signal locked.\nWelcome, Engineer.',
+  },
+  {
+    speaker: 'DIRECTOR LIU — ARTEMIS CORE',
+    text: 'This is Director Liu, Selene Lunar Colony.\nWe established this settlement in January 2092\non the southern rim. Two and a half years\nof continuous operation.',
+  },
+  {
+    speaker: 'DIRECTOR LIU — ARTEMIS CORE',
+    text: '147 residents across twelve habitat pods.\nPower, water, atmosphere, food, medical,\nmining, manufacturing, comms, research...\nthe full stack of human survival.',
+  },
+  {
+    speaker: 'DIRECTOR LIU — ARTEMIS CORE',
+    text: 'All systems report nominal.\nNo incidents. No alerts.\nBy every metric, this colony is healthy.',
+  },
+  {
+    speaker: 'DIRECTOR LIU — ARTEMIS CORE',
+    text: "We're planning a Phase 3 expansion.\nBefore we break ground, administration\nwants an independent infrastructure review.",
+  },
+  {
+    speaker: 'DIRECTOR LIU — ARTEMIS CORE',
+    text: "Your job: map our pod network.\nTrace the dependencies.\nTell us what we can't see from the inside.",
+  },
+  {
+    speaker: 'DIRECTOR LIU — ARTEMIS CORE',
+    text: "Your rover is standing by on the network.\nArtemis Core will be your first contact.\nGood luck, Engineer.",
+  },
+  {
+    speaker: 'SELENE COLONY ADMIN',
+    text: 'Transmission complete.\nConnection parameters received.\nStanding by for deployment...',
+  },
+];
+
+let currentDialogue = 0;
+let charIndex = 0;
+let typing = false;
+let dialogueActive = false;
+let typingTimer = null;
+let dialogueDone = false;
+
+function startDialogue() {
+  dialogueActive = true;
+  dialogueBox.style.display = 'block';
+  showLine(0);
+}
+
+function showLine(index) {
+  if (index >= DIALOGUE.length) {
+    dialogueBox.style.display = 'none';
+    dialogueDone = true;
+    showEndScreen();
+    return;
+  }
+  currentDialogue = index;
+  charIndex = 0;
+  typing = true;
+  promptEl.className = '';
+  speakerEl.textContent = DIALOGUE[index].speaker;
+  textEl.textContent = '';
+  typeNext();
+}
+
+function typeNext() {
+  const line = DIALOGUE[currentDialogue].text;
+  if (charIndex < line.length) {
+    textEl.textContent += line[charIndex];
+    charIndex++;
+    const delay = line[charIndex - 1] === '\n' ? 80 : 25;
+    typingTimer = setTimeout(typeNext, delay);
+  } else {
+    typing = false;
+    promptEl.className = 'visible';
+  }
+}
+
+function advanceDialogue() {
+  if (!dialogueActive) return;
+  if (typing) {
+    // Skip to end of current line
+    clearTimeout(typingTimer);
+    textEl.textContent = DIALOGUE[currentDialogue].text;
+    typing = false;
+    promptEl.className = 'visible';
+  } else {
+    showLine(currentDialogue + 1);
+  }
+}
+
+function showEndScreen() {
+  document.getElementById('end-screen').style.display = 'flex';
+}
+
+// =========================================================================
+// SCENE SEQUENCING
+// =========================================================================
+
+let scene = 'title';  // title → cinematic → dialogue → end
+let sceneTime = 0;
+let titleReady = false;
+
+// Title screen
+function showTitle() {
+  const ts = document.getElementById('title-screen');
+  ts.style.display = 'flex';
+  // Fade in overlay
+  setTimeout(() => {
+    document.getElementById('overlay').style.opacity = '0';
+  }, 300);
+  setTimeout(() => {
+    document.getElementById('title-text').style.opacity = '1';
+  }, 1500);
+  setTimeout(() => {
+    document.getElementById('subtitle').style.opacity = '1';
+  }, 2800);
+  setTimeout(() => {
+    document.getElementById('start-prompt').classList.add('visible');
+    titleReady = true;
+  }, 4000);
+}
+
+function startCinematic() {
+  if (!titleReady) return;
+  scene = 'cinematic';
+  sceneTime = 0;
+  document.getElementById('title-screen').style.display = 'none';
+}
+
+function startDialogueScene() {
+  scene = 'dialogue';
+  startDialogue();
+}
+
+// =========================================================================
+// INPUT
+// =========================================================================
+
+document.addEventListener('keydown', (e) => {
+  if (scene === 'title') {
+    startCinematic();
+  } else if (scene === 'dialogue') {
+    advanceDialogue();
+  }
+});
+
+document.addEventListener('click', (e) => {
+  if (scene === 'title') {
+    startCinematic();
+  } else if (scene === 'dialogue') {
+    advanceDialogue();
+  }
+});
+
+// =========================================================================
+// MAIN LOOP
+// =========================================================================
+
+let lastTime = 0;
+
+function frame(now) {
+  const dt = (now - lastTime) / 1000;
+  lastTime = now;
+  const t = now / 1000;
+
+  bgCtx.clearRect(0, 0, W, H);
+  fgCtx.clearRect(0, 0, W, H);
+
+  // Stars always visible
+  drawStars(t);
+
+  if (scene === 'title') {
+    // Just stars + subtle moon
+    drawSprite(bgCtx, SPRITES.moon, W * 0.7, H * 0.2, 6, '#334', 0.3);
+  }
+
+  if (scene === 'cinematic') {
+    sceneTime += dt;
+
+    // Phase 1: surface fades in (0-2s)
+    const surfaceAlpha = Math.min(1, sceneTime / 2);
+    drawSurface(surfaceAlpha);
+
+    // Phase 2: colony fades in (1.5-4s)
+    if (sceneTime > 1.5) {
+      const colonyAlpha = Math.min(1, (sceneTime - 1.5) / 2.5);
+      drawColonyScene(t, colonyAlpha);
+    }
+
+    // Phase 3: commander appears + dialogue starts (4.5s)
+    if (sceneTime > 3.5) {
+      const cmdAlpha = Math.min(1, (sceneTime - 3.5) / 1);
+      // Commander portrait in bottom-left area
+      drawSprite(fgCtx, SPRITES.commander, 50, H - 240, 5, '#aabbdd', cmdAlpha);
+    }
+
+    if (sceneTime > 5 && !dialogueActive) {
+      startDialogueScene();
+    }
+  }
+
+  if (scene === 'dialogue' || dialogueDone) {
+    drawSurface(1);
+    drawColonyScene(t, 1);
+    if (!dialogueDone) {
+      drawSprite(fgCtx, SPRITES.commander, 50, H - 240, 5, '#aabbdd', 1);
+    }
+  }
+
+  requestAnimationFrame(frame);
+}
+
+// BOOT
+showTitle();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

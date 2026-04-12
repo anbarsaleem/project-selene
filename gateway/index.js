@@ -1,7 +1,18 @@
 const express = require('express');
+const path = require('path');
 const app = express();
 
+// Serve static files (the cinematic intro)
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.get('/', (req, res) => {
+  const accept = req.headers['accept'] || '';
+
+  // Browsers get the cinematic intro; agents/curl get JSON
+  if (accept.includes('text/html')) {
+    return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  }
+
   res.json({
     colony: 'Project Selene',
     established: '2092-01-15',
