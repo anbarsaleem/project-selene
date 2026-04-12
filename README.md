@@ -12,7 +12,7 @@ This is intentionally open-ended. There is no spec for "done." We're interested 
 ## Getting Started
 
 ```bash
-LLM_API_KEY=your-key-here docker compose up --build -d
+docker compose up --build -d
 ```
 
 Then open **http://localhost:3000** in your browser.

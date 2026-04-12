@@ -9,7 +9,7 @@ All systems report nominal. The colony is stable and productive. Colony leadersh
 ## Getting Started
 
 ```bash
-LLM_API_KEY=your-key-here docker compose up --build
+docker compose up --build -d
 ```
 
 This starts:
@@ -105,6 +105,21 @@ RUN apt-get update && apt-get install -y nodejs npm
 RUN npm install openai
 ```
 
+### Running Your Agent
+
+Once your agent code is ready, set your API key and rebuild:
+
+```bash
+export LLM_API_KEY=your-key-here
+docker compose up --build -d
+```
+
+Then trigger your agent:
+
+```bash
+curl -X POST localhost:8080/map
+```
+
 ### Environment Variables
 
 Your scripts automatically receive:
@@ -112,7 +127,7 @@ Your scripts automatically receive:
 | Variable | Value | Description |
 |----------|-------|-------------|
 | `GATEWAY_URL` | `http://gateway:3000` | Colony gateway (use this inside the container, not localhost) |
-| `LLM_API_KEY` | *(your key)* | Pass via `LLM_API_KEY=sk-... docker compose up` |
+| `LLM_API_KEY` | *(from your environment)* | Set via `export LLM_API_KEY=...` before `docker compose up` |
 
 ### Full API Reference
 
