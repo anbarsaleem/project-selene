@@ -138,6 +138,20 @@ def format_analysis(analysis: dict) -> str:
     for key, val in analysis["key_metrics"].items():
         lines.append(f"- {key.replace('_', ' ').title()}: {val}")
 
+    if "resilience_score" in analysis:
+        rs = analysis["resilience_score"]
+        lines.append("")
+        lines.append(f"### Colony Resilience Index: {rs['composite_score']}/100 (Grade: {rs['grade']})")
+        lines.append("Subscores:")
+        for key, val in rs["subscores"].items():
+            weight = rs["weights"].get(key, 0)
+            lines.append(f"- {key.replace('_', ' ').title()}: {val}/100 (weight: {weight:.0%})")
+        if rs["mutual_dependency_loops"]:
+            lines.append(f"- Mutual dependency penalty: -{rs['mutual_dependency_penalty']} pts "
+                         f"({len(rs['mutual_dependency_loops'])} loop(s))")
+        spof_b = rs["spof_breakdown"]
+        lines.append(f"- SPOF breakdown: {spof_b['high']} high, {spof_b['medium']} medium, {spof_b['low']} low")
+
     return "\n".join(lines)
 
 
@@ -161,15 +175,16 @@ def build_user_prompt(colony_map: ColonyMap, analysis: dict) -> str:
         "\n---\n",
         "## Your Task\n",
         "Produce a detailed Markdown infrastructure assessment report with these sections:\n",
-        "1. **Executive Summary** — 3-4 sentence overview of colony health and key risks",
-        "2. **Colony Infrastructure Map** — describe the dependency graph, grouping pods by function",
+        "1. **Executive Summary** — 3-4 sentence overview of colony health and key risks. Include the Colony Resilience Index score and grade from the analytics.",
+        "2. **Colony Infrastructure Map** — describe the dependency graph, grouping pods by function. Note: a Mermaid dependency diagram will be appended to the report automatically — do NOT generate one yourself.",
         "3. **Critical Dependencies** — which pods are most depended upon, quantified, with impact analysis",
         "4. **Single Points of Failure Analysis** — deep dive into each SPOF with specific data",
         "5. **Supply Chain Consistency Review** — flag any mismatches between declared dependencies and actual supplies, cross-reference with logs/comms for explanation",
         "6. **Infrastructure Evolution** — what story do the logs, directives, and comms tell about how the colony changed over time? Focus on the pattern of redundancy removal",
         "7. **Cascade Failure Scenarios** — what happens step-by-step if the top 2-3 most critical pods go down?",
-        "8. **Recommendations for Phase 3 Expansion** — specific, actionable recommendations based on findings",
-        "9. **Appendix: Dependency Matrix** — table showing all pod-to-pod dependencies\n",
+        "8. **Colony Resilience Index** — interpret the composite score and subscores. Explain what each subscore measures and why the colony scored as it did. Highlight the mutual dependency penalty.",
+        "9. **Recommendations for Phase 3 Expansion** — specific, actionable recommendations based on findings",
+        "10. **Appendix: Dependency Matrix** — table showing all pod-to-pod dependencies\n",
         "Use the pre-computed analytics as your quantitative foundation, but add narrative depth ",
         "from the raw logs and comms data. Cite specific directives, timestamps, and metrics. ",
         "The report should be 2000-4000 words.",
@@ -201,10 +216,23 @@ def main() -> None:
     print("Calling LLM for report generation...", file=sys.stderr)
     report_md = generate_report(system_prompt, user_prompt)
 
+    mermaid_section = (
+        "\n\n---\n\n"
+        "## Appendix: Visual Dependency Graph\n\n"
+        "The following Mermaid diagram shows all inter-pod dependency relationships. "
+        "Edge thickness and color indicate criticality: "
+        "**red/thick = high**, **orange/medium = medium**, **grey/dashed = low**.\n\n"
+        "```mermaid\n"
+        f"{analysis['mermaid_diagram']}\n"
+        "```\n"
+    )
+
     with open(REPORT_PATH, "w") as f:
         f.write(report_md)
+        f.write(mermaid_section)
 
-    print(f"Report written to {REPORT_PATH} ({len(report_md)} chars)", file=sys.stderr)
+    total_len = len(report_md) + len(mermaid_section)
+    print(f"Report written to {REPORT_PATH} ({total_len} chars)", file=sys.stderr)
 
 
 if __name__ == "__main__":

@@ -164,6 +164,203 @@ def compute_cascade_impact(
     }
 
 
+POD_DISPLAY_NAMES: dict[str, str] = {
+    "helios": "Helios",
+    "artemis": "Artemis",
+    "hydroponics": "Hydroponics",
+    "aquifer": "Aquifer",
+    "zephyr": "Zephyr",
+    "prometheus": "Prometheus",
+    "medica": "Medica",
+    "terminus": "Terminus",
+    "nexus": "Nexus",
+    "forge": "Forge",
+    "vault": "Vault",
+    "sentinel": "Sentinel",
+}
+
+CRITICALITY_WEIGHT = {"high": 3, "medium": 2, "low": 1}
+
+
+def generate_mermaid_diagram(pods: dict[str, PodData]) -> str:
+    lines: list[str] = ["graph LR"]
+
+    styles = {
+        "power": ("helios",),
+        "water": ("aquifer",),
+        "atmosphere": ("zephyr",),
+        "production": ("hydroponics", "terminus", "forge"),
+        "science": ("prometheus", "medica"),
+        "command": ("artemis",),
+        "support": ("nexus", "vault", "sentinel"),
+    }
+    style_colors = {
+        "power": "#FFD700",
+        "water": "#4FC3F7",
+        "atmosphere": "#81C784",
+        "production": "#FFB74D",
+        "science": "#CE93D8",
+        "command": "#EF5350",
+        "support": "#90A4AE",
+    }
+
+    for group, members in styles.items():
+        color = style_colors[group]
+        lines.append(f"    subgraph {group}[{group.upper()}]")
+        for pid in members:
+            if pid in pods:
+                display = POD_DISPLAY_NAMES.get(pid, pid)
+                lines.append(f"        {pid}[{display}]")
+        lines.append("    end")
+        lines.append(f"    style {group} fill:{color}22,stroke:{color}")
+
+    edge_styles: list[str] = []
+    edge_idx = 0
+    for pid, pod in sorted(pods.items()):
+        for dep in pod.dependencies:
+            if dep.pod_id not in pods:
+                continue
+            crit = dep.criticality
+            resource_short = dep.resource.replace("_", " ")
+            if crit == "high":
+                lines.append(f"    {dep.pod_id} ==>|{resource_short}| {pid}")
+                edge_styles.append(f"    linkStyle {edge_idx} stroke:#E53935,stroke-width:3px")
+            elif crit == "medium":
+                lines.append(f"    {dep.pod_id} -->|{resource_short}| {pid}")
+                edge_styles.append(f"    linkStyle {edge_idx} stroke:#FB8C00,stroke-width:2px")
+            else:
+                lines.append(f"    {dep.pod_id} -.->|{resource_short}| {pid}")
+                edge_styles.append(f"    linkStyle {edge_idx} stroke:#78909C,stroke-width:1px")
+            edge_idx += 1
+
+    lines.extend(edge_styles)
+    return "\n".join(lines)
+
+
+def compute_resilience_score(
+    pods: dict[str, PodData],
+    spofs: list[dict[str, Any]],
+    cascade_scenarios: dict[str, dict[str, Any]],
+    depended_by: dict[str, list[str]],
+) -> dict[str, Any]:
+    total_pods = len(pods)
+
+    # --- Redundancy score (0-100): penalize SPOFs weighted by criticality ---
+    high_spofs = sum(1 for s in spofs if s["criticality"] == "high")
+    med_spofs = sum(1 for s in spofs if s["criticality"] == "medium")
+    low_spofs = sum(1 for s in spofs if s["criticality"] == "low")
+    weighted_spof_count = high_spofs * 3 + med_spofs * 2 + low_spofs * 1
+    max_possible_spof_weight = total_pods * (total_pods - 1) * 3
+    redundancy_score = max(0, 100 - (weighted_spof_count / max_possible_spof_weight) * 400)
+
+    # --- Buffer score (0-100): assess emergency reserves across critical pods ---
+    buffer_penalties = 0.0
+    buffer_checks = 0
+    for pid, pod in pods.items():
+        meta = pod.metadata
+        if "oxygen_reserve_hours" in meta:
+            hours = meta["oxygen_reserve_hours"]
+            buffer_checks += 1
+            if hours < 24:
+                buffer_penalties += (24 - hours) / 24
+        if "pharmacy_stock_days" in meta:
+            days = meta["pharmacy_stock_days"]
+            buffer_checks += 1
+            if days < 30:
+                buffer_penalties += (30 - days) / 30
+        if "backup_systems" in meta:
+            buffer_checks += 1
+            if meta["backup_systems"] == 0:
+                buffer_penalties += 1.0
+        if "battery_reserve_pct" in meta:
+            pct = meta["battery_reserve_pct"]
+            buffer_checks += 1
+            if pct < 50:
+                buffer_penalties += (50 - pct) / 50
+        if "emergency_ration_days" in meta:
+            days = meta["emergency_ration_days"]
+            buffer_checks += 1
+            if days < 30:
+                buffer_penalties += (30 - days) / 30
+        if "decommissioned_reserves" in meta:
+            decomm = meta["decommissioned_reserves"]
+            if isinstance(decomm, list) and decomm:
+                buffer_checks += 1
+                buffer_penalties += min(1.0, len(decomm) * 0.5)
+    buffer_score = max(0, 100 - (buffer_penalties / max(buffer_checks, 1)) * 100) if buffer_checks else 50
+
+    # --- Cascade score (0-100): how contained are failures? ---
+    if cascade_scenarios:
+        worst_cascade = max(s["total_affected"] for s in cascade_scenarios.values())
+        cascade_ratio = worst_cascade / total_pods
+        cascade_score = max(0, 100 - cascade_ratio * 120)
+    else:
+        cascade_score = 100.0
+
+    # --- Concentration score (0-100): how evenly distributed are dependents? ---
+    dep_counts = [len(deps) for deps in depended_by.values()]
+    max_deps = max(dep_counts) if dep_counts else 0
+    mean_deps = sum(dep_counts) / len(dep_counts) if dep_counts else 0
+    concentration_ratio = max_deps / total_pods if total_pods else 0
+    concentration_score = max(0, 100 - concentration_ratio * 150)
+
+    # --- Independence score (0-100): fraction of pods with zero dependencies ---
+    independent_pods = sum(1 for p in pods.values() if not p.dependencies)
+    independence_score = (independent_pods / total_pods) * 100 if total_pods else 0
+
+    # --- Mutual dependency penalty ---
+    mutual_deps = []
+    for pid, pod in pods.items():
+        for dep in pod.dependencies:
+            partner = pods.get(dep.pod_id)
+            if partner:
+                for partner_dep in partner.dependencies:
+                    if partner_dep.pod_id == pid:
+                        pair = tuple(sorted([pid, dep.pod_id]))
+                        if pair not in [(m["pods"][0], m["pods"][1]) for m in mutual_deps]:
+                            mutual_deps.append({
+                                "pods": list(pair),
+                                "resources": [dep.resource, partner_dep.resource],
+                            })
+    mutual_penalty = len(mutual_deps) * 15
+
+    weights = {
+        "redundancy": 0.30,
+        "buffer_adequacy": 0.20,
+        "cascade_containment": 0.25,
+        "concentration": 0.15,
+        "independence": 0.10,
+    }
+    subscores = {
+        "redundancy": round(redundancy_score, 1),
+        "buffer_adequacy": round(buffer_score, 1),
+        "cascade_containment": round(cascade_score, 1),
+        "concentration": round(concentration_score, 1),
+        "independence": round(independence_score, 1),
+    }
+
+    composite = sum(subscores[k] * weights[k] for k in weights)
+    composite = max(0, round(composite - mutual_penalty, 1))
+
+    grade = (
+        "A" if composite >= 80 else
+        "B" if composite >= 65 else
+        "C" if composite >= 50 else
+        "D" if composite >= 35 else
+        "F"
+    )
+
+    return {
+        "composite_score": composite,
+        "grade": grade,
+        "subscores": subscores,
+        "weights": weights,
+        "mutual_dependency_loops": mutual_deps,
+        "mutual_dependency_penalty": mutual_penalty,
+        "spof_breakdown": {"high": high_spofs, "medium": med_spofs, "low": low_spofs},
+    }
+
+
 def generate_analysis_summary(pods: dict[str, PodData]) -> dict[str, Any]:
     graph = build_dependency_graph(pods)
     depended_by = graph["depended_by"]
@@ -185,6 +382,9 @@ def generate_analysis_summary(pods: dict[str, PodData]) -> dict[str, Any]:
     total_log_entries = sum(len(p.logs) for p in pods.values())
     total_population = sum(p.population for p in pods.values())
 
+    mermaid_diagram = generate_mermaid_diagram(pods)
+    resilience = compute_resilience_score(pods, spofs, cascade_scenarios, depended_by)
+
     return {
         "dependency_graph": graph,
         "dependency_rankings": rankings,
@@ -192,6 +392,8 @@ def generate_analysis_summary(pods: dict[str, PodData]) -> dict[str, Any]:
         "supply_dependency_mismatches": mismatches,
         "infrastructure_timeline": timeline,
         "cascade_scenarios": cascade_scenarios,
+        "mermaid_diagram": mermaid_diagram,
+        "resilience_score": resilience,
         "key_metrics": {
             "total_pods": len(pods),
             "total_population": total_population,
