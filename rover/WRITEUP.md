@@ -6,9 +6,13 @@ The agent is structured as two Python modules invoked by shell entrypoints, runn
 
 **Mapping phase** (`agent/mapper.py`): An async HTTP crawler using `httpx` that discovers and ingests all colony data. Discovery uses a hybrid approach — BFS traversal starting from the gateway's entrypoint (Artemis), following dependency and supply references to discover pods dynamically, then cross-checking against a known registry to catch isolated pods (e.g., Sentinel, which has zero dependencies and wouldn't appear in any other pod's dependency chain). In practice, all 12 pods were discovered dynamically in 0.25 seconds via `asyncio.gather` parallelism. The output schema (`map.json`) preserves raw API responses faithfully with Pydantic validation, keyed by pod ID for O(1) lookup during analysis.
 
-**Reporting phase** (`agent/reporter.py`): A two-stage pipeline. First, `graph_analysis.py` pre-computes structured analytics — dependency rankings, single points of failure, supply/dependency consistency checks, cascade failure BFS, and infrastructure change timelines — using plain Python (no networkx needed for 12 nodes). Then the pre-computed analytics and raw colony data are sent to Claude Sonnet in a single prompt. Providing both ensures the LLM has correct quantitative claims to anchor its narrative while having full access to logs and comms for contextual depth.
+**Reporting phase** (`agent/reporter.py`): A two-stage pipeline. First, `graph_analysis.py` pre-computes structured analytics — dependency rankings, single points of failure, supply/dependency consistency checks, cascade failure BFS, infrastructure change timelines, a Mermaid dependency diagram, and a quantitative resilience index — using plain Python (no networkx needed for 12 nodes). Then the pre-computed analytics and raw colony data are sent to Claude Sonnet in a single prompt. The LLM generates the narrative report, and the Mermaid diagram is appended deterministically afterward. Providing both pre-computed analytics and raw data ensures the LLM has correct quantitative claims to anchor its narrative while having full access to logs and comms for contextual depth.
 
-**Why pre-compute before LLM**: LLMs can miscount graph edges. By computing SPOF relationships and cascade impacts deterministically, the report's quantitative claims are guaranteed correct. The LLM adds narrative synthesis, cross-referencing, and actionable recommendations — tasks it excels at.
+**Why pre-compute before LLM**: LLMs can miscount graph edges. By computing SPOF relationships, cascade impacts, and resilience scores deterministically, the report's quantitative claims are guaranteed correct. The Mermaid diagram is also generated deterministically — asking an LLM to produce a graph with 22 edges would risk dropped or hallucinated connections. The LLM adds narrative synthesis, cross-referencing, and actionable recommendations — tasks it excels at.
+
+**Visual dependency graph**: A Mermaid diagram is generated in `graph_analysis.py` and appended as a report appendix. Pods are grouped into functional subgraphs (power, water, atmosphere, production, science, command, support) with edges styled by criticality — thick red for high, orange for medium, dashed grey for low. This makes the colony's hub-and-spoke topology immediately visible.
+
+**Colony Resilience Index**: A composite 0–100 score computed from five weighted subscores: redundancy (30%), buffer adequacy (20%), cascade containment (25%), concentration (15%), and independence (10%), with a penalty of 15 points per mutual dependency loop. The colony scored 0/100 (Grade F) — cascade containment and concentration both zeroed out, and three mutual dependency loops (helios↔aquifer, helios↔terminus, aquifer↔terminus) applied a cumulative 45-point penalty. This score gives colony leadership a single number to track as they remediate risks before Phase 3.
 
 ## Key Findings
 
@@ -22,8 +26,6 @@ The colony has systematically removed redundancy over its 2.5-year history throu
 
 ## What I'd Do With More Time
 
-- **Visual dependency graph** — Generate a Mermaid or D3.js diagram embedded in the report showing the dependency web with criticality-weighted edges
-- **Quantitative resilience scoring** — Weight SPOFs by criticality level, buffer duration, and cascade depth to produce a single colony resilience index
 - **Multi-turn LLM analysis** — Let the LLM ask follow-up questions about specific pods or request additional data slices for deeper investigation
 - **Diff-based re-crawl** — Only re-fetch pods whose data changed since last crawl, enabling incremental monitoring
 - **Monte Carlo failure simulation** — Model probabilistic failure scenarios with weighted likelihoods to prioritize remediation investments
