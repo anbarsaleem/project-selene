@@ -246,6 +246,9 @@ def compute_resilience_score(
     total_pods = len(pods)
 
     # --- Redundancy score (0-100): penalize SPOFs weighted by criticality ---
+    # Scaling factor 400: chosen so that a colony where ~25% of possible dependency
+    # pairs are unredundant SPOFs scores zero. This reflects that even moderate SPOF
+    # density is dangerous in a life-support context.
     high_spofs = sum(1 for s in spofs if s["criticality"] == "high")
     med_spofs = sum(1 for s in spofs if s["criticality"] == "medium")
     low_spofs = sum(1 for s in spofs if s["criticality"] == "low")
@@ -290,6 +293,9 @@ def compute_resilience_score(
     buffer_score = max(0, 100 - (buffer_penalties / max(buffer_checks, 1)) * 100) if buffer_checks else 50
 
     # --- Cascade score (0-100): how contained are failures? ---
+    # Scaling factor 120: a cascade affecting >83% of pods (120/100*83=~100) scores
+    # zero. Slightly above 100 to ensure near-total cascades are penalized harshly
+    # even if one or two pods survive.
     if cascade_scenarios:
         worst_cascade = max(s["total_affected"] for s in cascade_scenarios.values())
         cascade_ratio = worst_cascade / total_pods
@@ -298,6 +304,8 @@ def compute_resilience_score(
         cascade_score = 100.0
 
     # --- Concentration score (0-100): how evenly distributed are dependents? ---
+    # Scaling factor 150: a pod serving >67% of the colony as dependents (150/100*67=~100)
+    # zeroes the score. This penalizes hub-and-spoke topologies where one pod serves most others.
     dep_counts = [len(deps) for deps in depended_by.values()]
     max_deps = max(dep_counts) if dep_counts else 0
     mean_deps = sum(dep_counts) / len(dep_counts) if dep_counts else 0
